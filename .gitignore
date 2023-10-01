@@ -1,37 +1,56 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Compiled class files
+/build/
+/out/
+/bin/
+/.gradle/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# Dependency directories
+/.idea/
+/.gradle/
+/.project
+/.settings/
+/.metadata/
+/.vscode/
+/.DS_Store
+/.classpath
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# Spring Boot specific
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/resources/application.properties
+!**/src/main/resources/application.yml
+
+# Log files
+logs/
+*.log
+log/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Intellij IDEA specific
+.idea/
 *.iml
+*.iws
 *.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+.idea_modules/
+*.log
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Gradle-specific
+.gradle/
+.gradle-wrapper/
 
-### VS Code ###
-.vscode/
+# Miscellaneous
+build/
+.gradle/
+.idea/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+*.bak
+*.swp
