@@ -1,9 +1,9 @@
 package com.mnf.javaapigenerator.service;
 
 import com.mnf.javaapigenerator.ApiGenerator;
+import com.mnf.javaapigenerator.component.dto.ResponseDto;
 import com.mnf.javaapigenerator.dto.GeneratedApiResponseDto;
 import com.mnf.javaapigenerator.dto.RequestDto;
-import com.mnf.javaapigenerator.result.component.dto.ResponseDto;
 
 public class ApiGeneratorServiceImpl implements IApiGeneratorService {
     @Override

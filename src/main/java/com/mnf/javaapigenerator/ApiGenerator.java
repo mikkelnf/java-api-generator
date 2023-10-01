@@ -45,9 +45,25 @@ public class ApiGenerator {
 
         scanner.close();
 
-        generateFile(apiName, basePackagePath, basePackage, 0, columns, anotherGetOneName);
-        generateFile(apiName, basePackagePath, basePackage, 1, columns, anotherGetOneName);
-        generateFile(apiName, basePackagePath, basePackage, 2, columns, anotherGetOneName);
+//      generate controller
+        generateFile(apiName, basePackagePath, basePackage, "controller", columns, anotherGetOneName);
+//      generate entity
+        generateFile(apiName, basePackagePath, basePackage, "entity", columns, anotherGetOneName);
+//      generate entity listener
+        generateFile(apiName, basePackagePath, basePackage, "entityListener", columns, anotherGetOneName);
+//      generate dto
+        generateFile(apiName, basePackagePath, basePackage, "dto", columns, anotherGetOneName);
+        generateFile(apiName, basePackagePath, basePackage, "dto", columns, anotherGetOneName);
+//      generate repository
+        generateFile(apiName, basePackagePath, basePackage, "repository", columns, anotherGetOneName);
+//      generate interface service
+        generateFile(apiName, basePackagePath, basePackage, "interfaceService", columns, anotherGetOneName);
+//      generate service impl
+        generateFile(apiName, basePackagePath, basePackage, "serviceImpl", columns, anotherGetOneName);
+//      generate exception
+        generateFile(apiName, basePackagePath, basePackage, "exception", columns, anotherGetOneName);
+//      generate config
+        generateFile(apiName, basePackagePath, basePackage, "config", columns, anotherGetOneName);
     }
 
     private static String generateControllerContent(String basePackage, String apiName, String className, String addAnotherGetOneName){
@@ -272,7 +288,7 @@ public class ApiGenerator {
                 """.formatted(basePackage, basePackage, entityName, className, entityName, entityName);
     }
 
-    private static void generateFile(String apiNameInput, String basePackagePath, String basePackageInput, int fileType, String[] columns, String anotherGetOneName) {
+    private static void generateFile(String apiNameInput, String basePackagePath, String basePackageInput, String fileType, String[] columns, String anotherGetOneName) {
         String fileName = "";
         String className = "";
         String fileDirectory = "";
@@ -280,24 +296,21 @@ public class ApiGenerator {
         String fileContent = "";
 
         switch (fileType){
-            case(0):
-//              CONTROLLER
+            case("controller"):
                 fileName = uppercaseFirstLetter(apiNameInput).concat("Controller.java");
                 className = uppercaseFirstLetter(apiNameInput).concat("Controller");
                 fileDirectory = String.format("src/main/java/%s/result/controller", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
                 fileContent = generateControllerContent(basePackageInput, apiNameInput, className, anotherGetOneName);
                 break;
-            case(1):
-//              ENTITY
+            case("entity"):
                 fileName = uppercaseFirstLetter(apiNameInput).concat("Entity.java");
                 className = uppercaseFirstLetter(apiNameInput).concat("Entity");
                 fileDirectory = String.format("src/main/java/%s/result/entity", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
                 fileContent = generateEntityContent(basePackageInput, apiNameInput, className, columns);
                 break;
-            case(2):
-//              ENTITY-LISTENER
+            case("entityListener"):
                 String entityName = uppercaseFirstLetter(apiNameInput).concat("Entity");
                 fileName = uppercaseFirstLetter(apiNameInput).concat("EntityListener.java");
                 className = uppercaseFirstLetter(apiNameInput).concat("EntityListener");
@@ -305,14 +318,24 @@ public class ApiGenerator {
                 filePath = String.format("%s/%s", fileDirectory, fileName);
                 fileContent = generateEntityListenerContent(basePackageInput, apiNameInput, className, entityName);
                 break;
-            case(3):
+            case("dto"):
 
-            case(4):
+                break;
+            case("repository"):
 
-            case(5):
+                break;
+            case("interfaceService"):
 
-            case(6):
+                break;
+            case("serviceImpl"):
 
+                break;
+            case("exception"):
+
+                break;
+            case("config"):
+
+                break;
         }
 
         try {
