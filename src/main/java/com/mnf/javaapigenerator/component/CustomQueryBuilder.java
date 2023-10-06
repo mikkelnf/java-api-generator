@@ -1,16 +1,11 @@
 package com.mnf.javaapigenerator.component;
 
-import com.mnf.javaapigenerator.component.dto.GetPaginationResponseDto;
-import com.mnf.javaapigenerator.component.dto.PaginationInfoDto;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import com.mnf.javaapigenerator.component.dto.*;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import jakarta.persistence.*;
+import jakarta.persistence.criteria.*;
+import java.util.*;
 
 @Component
 public class CustomQueryBuilder<T> {
@@ -145,7 +140,12 @@ public class CustomQueryBuilder<T> {
         }
     }
 
-    public GetPaginationResponseDto<T> getAllWithPagination(Integer currentPage, Integer pageSize, String sortBy, String sortType){
+    public GetPaginationResponseDto<T> getAllWithPagination(GetPaginationRequestDto<?> getPaginationRequestDto){
+        Integer pageSize = getPaginationRequestDto.getSize();
+        Integer currentPage = getPaginationRequestDto.getPage();
+        String sortType = getPaginationRequestDto.getSortType();
+        String sortBy = getPaginationRequestDto.getSortBy();
+
         if("asc".equals(sortType)){
             this.orderList.add(criteriaBuilder.asc(root.get(sortBy)));
         }else if("desc".equals(sortType)){

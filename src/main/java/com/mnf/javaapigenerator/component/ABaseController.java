@@ -2,7 +2,7 @@ package com.mnf.javaapigenerator.component;
 
 import com.mnf.javaapigenerator.component.dto.ResponseDto;
 import com.mnf.javaapigenerator.component.dto.ResponseStatusOnlyDto;
-import com.mnf.javaapigenerator.enumeration.ResponseDtoStatusEnum;
+import com.mnf.javaapigenerator.component.enumeration.ResponseDtoStatusEnum;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;

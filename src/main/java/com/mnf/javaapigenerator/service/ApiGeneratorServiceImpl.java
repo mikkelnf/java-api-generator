@@ -11,7 +11,6 @@ public class ApiGeneratorServiceImpl implements IApiGeneratorService {
         ResponseDto<GeneratedApiResponseDto> generatedApiResponseDto = new ResponseDto<>();
         String generatedZipFile = ApiGenerator.generate(requestDto);
         generatedApiResponseDto.setContent(new GeneratedApiResponseDto(generatedZipFile));
-
         return generatedApiResponseDto;
     }
 }

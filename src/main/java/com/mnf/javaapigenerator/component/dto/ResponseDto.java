@@ -1,6 +1,6 @@
 package com.mnf.javaapigenerator.component.dto;
 
-import com.mnf.javaapigenerator.enumeration.ResponseDtoStatusEnum;
+import com.mnf.javaapigenerator.component.enumeration.ResponseDtoStatusEnum;
 
 public class ResponseDto<T> extends AResponseDto {
     private T content;
