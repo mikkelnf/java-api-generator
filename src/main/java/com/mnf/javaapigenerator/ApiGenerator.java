@@ -3,7 +3,6 @@ package com.mnf.javaapigenerator;
 import com.mnf.javaapigenerator.dto.RequestDto;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class ApiGenerator {
@@ -49,7 +48,7 @@ public class ApiGenerator {
         String changeUniqueValidationNameInput = scanner.nextLine();
         String changeUniqueValidationName = columns[Integer.valueOf(changeUniqueValidationNameInput) - 1].replaceAll("[:]\\w+", "");
 
-        System.out.println("Choose column to for add and update endpoint(1-%s) :".formatted(columns.length));
+        System.out.println("Choose column to be included in add and update endpoint(1-%s) :".formatted(columns.length));
         System.out.println("If choose multiple (e.g. 1,2,3)");
         for(int i=0; i< columns.length; i++){
             System.out.println(i+1 + ". " + columns[i].replaceAll("[:]\\w+", ""));
@@ -90,8 +89,8 @@ public class ApiGenerator {
                 """
                 package %s.controller;
                 
-                import %s.component.ABaseController;
-                import %s.component.dto.*;
+                import com.mnf.compos.ABaseController;
+                import com.mnf.compos.dto.*;
                 import %s.dto.%sRequestDto;
                 import %s.dto.%sResponseDto;
                 import %s.service.I%sService;
@@ -106,7 +105,7 @@ public class ApiGenerator {
                     I%sService %sService;
                 
                 """.formatted(
-                        basePackage, basePackage, basePackage, basePackage, apiNameUpperCase,
+                        basePackage, basePackage, apiNameUpperCase,
                         basePackage, apiNameUpperCase, basePackage, apiNameUpperCase, apiName,
                         className, apiNameUpperCase, apiName);
 
@@ -396,7 +395,7 @@ public class ApiGenerator {
                 """
                 package %s.service;
                 
-                import %s.component.dto.*;
+                import com.mnf.compos.dto.*;
                 import %s.dto.%sRequestDto;
                 import %s.dto.%sResponseDto;
                 
@@ -404,7 +403,7 @@ public class ApiGenerator {
                     ResponseStatusOnlyDto add(%sRequestDto requestDto);
                     ResponseDto<PostResponseDto> getOneById(String id);
                 """.formatted(
-                        basePackage, basePackage, basePackage, uppercaseFirstLetter(apiName), basePackage, uppercaseFirstLetter(apiName),
+                        basePackage, basePackage, uppercaseFirstLetter(apiName), basePackage, uppercaseFirstLetter(apiName),
                         uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName));
 
         if(anotherGetOneName != null){
@@ -434,9 +433,9 @@ public class ApiGenerator {
                 """
                 package %s.service;
                 
-                import %s.component.*;
-                import %s.component.dto.*;
-                import %s.component.enumeration.ResponseDtoStatusEnum;
+                import com.mnf.compos.*;
+                import com.mnf.compos.dto.*;
+                import com.mnf.compos.enumeration.ResponseDtoStatusEnum;
                 import %s.dto.*;
                 import %s.entity.%sEntity;
                 import %s.exception.%sException;
@@ -457,8 +456,8 @@ public class ApiGenerator {
                     @Autowired
                     ModelMapper modelMapper;
                 """.formatted(
-                        basePackage, basePackage, basePackage, basePackage, basePackage, basePackage,
-                        upperApiName, basePackage, upperApiName, basePackage, upperApiName, upperApiName,
+                        basePackage, basePackage, basePackage, upperApiName, basePackage,
+                        upperApiName, basePackage, upperApiName, upperApiName,
                         upperApiName, upperApiName, upperApiName, apiName);
 
         String optionalUniqueContent =

@@ -1,7 +1,7 @@
 package com.mnf.javaapigenerator.controller;
 
-import com.mnf.javaapigenerator.component.ABaseController;
-import com.mnf.javaapigenerator.component.dto.ResponseDto;
+import com.mnf.compos.ABaseController;
+import com.mnf.compos.dto.ResponseDto;
 import com.mnf.javaapigenerator.dto.GeneratedApiResponseDto;
 import com.mnf.javaapigenerator.dto.RequestDto;
 import com.mnf.javaapigenerator.service.IApiGeneratorService;
