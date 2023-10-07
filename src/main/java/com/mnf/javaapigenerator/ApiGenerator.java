@@ -275,7 +275,7 @@ public class ApiGenerator {
         return entityContentTopSection.concat(entityColumns).concat(entityGetterSetter);
     }
 
-    private static String generateEntityListenerContent(String basePackage, String apiName, String className, String entityName){
+    private static String generateEntityListenerContent(String basePackage, String className, String entityName){
         return
                 """
                 package %s.entity.listener;
@@ -304,39 +304,18 @@ public class ApiGenerator {
                 """.formatted(basePackage, basePackage, entityName, className, entityName, entityName);
     }
 
-    private static String generateDtoContent(String basePackage, String apiName, String className, String fileName, String[] columns, String anotherGetOneName){
-        String endOfTemplate =
-                """
-                
-                }
-                """;
+    private static String generateDtoContent(String basePackage, String apiName, String fileName, String[] columns, String anotherGetOneName){
         if(fileName.contains("RequestDto")){
             String requestDtoContent =
                     """
                     package %s.dto;
                     
-                    import lombok.*;
-                    
-                    @Getter
-                    @Setter
                     public class %sRequestDto {
                         private String id;
                         private Integer isActive;
                     """.formatted(basePackage, uppercaseFirstLetter(apiName));
 
-            for(String column : columns){
-                if(!column.isEmpty() || !column.isBlank()){
-                    String[] splittedColumn = column.split(":");
-                    String columnName = splittedColumn[0];
-                    String columnDataType = splittedColumn[1];
-                    String newColumnTemplate =
-                            """
-                                private %s %s;
-                            """.formatted(columnDataType, columnName);
-
-                    requestDtoContent = requestDtoContent + newColumnTemplate;
-                }
-            }
+            requestDtoContent = requestDtoContent + generateFieldTemplate(columns);
 
             if(anotherGetOneName != null){
                 String constructorTemplate =
@@ -353,18 +332,37 @@ public class ApiGenerator {
                 requestDtoContent = requestDtoContent + constructorTemplate;
             }
 
-            return requestDtoContent + endOfTemplate;
+            String requestDtoGetterSetterContent =
+                    """
+                        
+                        public String getId() {
+                            return id;
+                        }
+                    
+                        public void setId(String id) {
+                            this.id = id;
+                        }
+                    
+                        public Integer getIsActive() {
+                            return isActive;
+                        }
+                    
+                        public void setIsActive(Integer isActive) {
+                            this.isActive = isActive;
+                        }
+                    """;
+
+            requestDtoContent = requestDtoContent + requestDtoGetterSetterContent + generateGetterSetterTemplate(columns);
+
+            return closeBracket(requestDtoContent);
         }
         else{
             String responseDtoContent =
                     """
                     package %s.dto;
                     
-                    import lombok.*;
                     import java.time.LocalDate;
                     
-                    @Getter
-                    @Setter
                     public class %sResponseDto {
                         private String id;
                         private LocalDate createdDate;
@@ -372,21 +370,47 @@ public class ApiGenerator {
                         private Integer isActive;
                     """.formatted(basePackage, uppercaseFirstLetter(apiName));
 
-            for(String column : columns){
-                if(!column.isEmpty() || !column.isBlank()){
-                    String[] splittedColumn = column.split(":");
-                    String columnName = splittedColumn[0];
-                    String columnDataType = splittedColumn[1];
-                    String newColumnTemplate =
-                            """
-                                private %s %s;
-                            """.formatted(columnDataType, columnName);
+            String responseDtoGetterSetterContent =
+                    """
+                        
+                        public String getId() {
+                            return id;
+                        }
+                    
+                        public void setId(String id) {
+                            this.id = id;
+                        }
+                    
+                        public LocalDate getCreatedDate() {
+                            return createdDate;
+                        }
+                    
+                        public void setCreatedDate(LocalDate createdDate) {
+                            this.createdDate = createdDate;
+                        }
+                    
+                        public LocalDate getUpdatedDate() {
+                            return updatedDate;
+                        }
+                    
+                        public void setUpdatedDate(LocalDate updatedDate) {
+                            this.updatedDate = updatedDate;
+                        }
+                    
+                        public Integer getIsActive() {
+                            return isActive;
+                        }
+                    
+                        public void setIsActive(Integer isActive) {
+                            this.isActive = isActive;
+                        }
+                    """;
 
-                    responseDtoContent = responseDtoContent + newColumnTemplate;
-                }
-            }
+            responseDtoContent =
+                    responseDtoContent + generateFieldTemplate(columns) +
+                            responseDtoGetterSetterContent + generateGetterSetterTemplate(columns);
 
-            return responseDtoContent + endOfTemplate;
+            return closeBracket(responseDtoContent);
         }
     }
 
@@ -759,7 +783,7 @@ public class ApiGenerator {
                 className = uppercaseFirstLetter(apiNameInput).concat("EntityListener");
                 fileDirectory = String.format("src/main/java/com/mnf/javaapigenerator/result/%s/entity/listener", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
-                fileContent = generateEntityListenerContent(basePackageInput, apiNameInput, className, entityName);
+                fileContent = generateEntityListenerContent(basePackageInput, className, entityName);
                 break;
             case("dto"):
                 fileDirectory = String.format("src/main/java/com/mnf/javaapigenerator/result/%s/dto", basePackagePath);
@@ -767,8 +791,8 @@ public class ApiGenerator {
                 String responseFileName = uppercaseFirstLetter(apiNameInput).concat("ResponseDto.java");
                 String requestFilePath = String.format("%s/%s", fileDirectory, requestFileName);
                 String responseFilePath = String.format("%s/%s", fileDirectory, responseFileName);
-                String requestFileContent = generateDtoContent(basePackageInput, apiNameInput, className, requestFileName, columns, anotherGetOneName);
-                String responseFileContent = generateDtoContent(basePackageInput, apiNameInput, className, responseFileName, columns, anotherGetOneName);
+                String requestFileContent = generateDtoContent(basePackageInput, apiNameInput, requestFileName, columns, anotherGetOneName);
+                String responseFileContent = generateDtoContent(basePackageInput, apiNameInput, responseFileName, columns, anotherGetOneName);
                 String[] requestFile = new String[] {requestFilePath, requestFileContent};
                 String[] responseFile = new String[] {responseFilePath, responseFileContent};
                 multipleFiles = true;
@@ -832,12 +856,70 @@ public class ApiGenerator {
         }
     }
 
+    private static String generateFieldTemplate(String[] columns){
+        String result = "";
+
+        for(String column : columns){
+            if(!column.isEmpty() || !column.isBlank()){
+                String[] splittedColumn = column.split(":");
+                String columnName = splittedColumn[0];
+                String columnDataType = splittedColumn[1];
+                String newColumnTemplate =
+                        """
+                            private %s %s;
+                        """.formatted(columnDataType, columnName);
+
+                result = result + newColumnTemplate;
+            }
+        }
+
+        return result;
+    }
+
+    private static String generateGetterSetterTemplate(String[] columns){
+        String result = "";
+
+        for(String column : columns){
+            if(!column.isEmpty() || !column.isBlank()){
+                String[] splittedColumn = column.split(":");
+                String columnName = splittedColumn[0];
+                String columnDataType = splittedColumn[1];
+                String newGetterSetterTemplate =
+                        """
+                            
+                            public %s get%s() {
+                                return %s;
+                            }
+    
+                            public void set%s(%s %s) {
+                                this.%s = %s;
+                            }
+                        """.formatted(columnDataType, uppercaseFirstLetter(columnName), columnName, uppercaseFirstLetter(columnName), columnDataType, columnName, columnName, columnName);
+
+                result = result + newGetterSetterTemplate;
+            }
+        }
+
+        return result;
+    }
+
+    private static String closeBracket(String content){
+        String endOfTemplate =
+                """
+                
+                }
+                """;
+
+        return content + endOfTemplate;
+    }
+
     private static String uppercaseFirstLetter(String input) {
         if (input == null || input.isEmpty()) {
             return input;
         }
 
         char firstChar = Character.toUpperCase(input.charAt(0));
+
         return firstChar + input.substring(1);
     }
 }
