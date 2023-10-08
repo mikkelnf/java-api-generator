@@ -1,14 +1,9 @@
-package com.mnf.javaapigenerator;
-
-import com.mnf.javaapigenerator.dto.RequestDto;
+package com.mnf.javaapigenerator.util;
 
 import java.io.*;
 import java.util.*;
 
-public class ApiGenerator {
-    public static String generate(RequestDto requestDto){
-        return null;
-    }
+public class ApiGeneratorUtil {
     public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
 
@@ -80,6 +75,18 @@ public class ApiGenerator {
         generateFile(apiName, basePackagePath, basePackage, "exception", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
 //      generate config
         generateFile(apiName, basePackagePath, basePackage, "config", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+
+        String sourceZipDir = "src/main/java/com/mnf/javaapigenerator/result/";
+        String zipDestinationDir = "src/main/java/com/mnf/javaapigenerator/zip/";
+        String zipName = uppercaseFirstLetter(apiName).concat("Api.zip");
+
+        ZipGeneratorUtil.zipDirectory(sourceZipDir, zipDestinationDir, zipName);
+
+        DeleteDirectoryUtil.deleteDirectory(sourceZipDir);
+
+        System.out.println(FileEncoderUtil.encodeFileToBase64(zipDestinationDir.concat(zipName)));
+
+        DeleteDirectoryUtil.deleteDirectory(zipDestinationDir);
     }
 
     private static String generateControllerContent(String basePackage, String apiName, String className, String addAnotherGetOneName){
@@ -123,7 +130,7 @@ public class ApiGenerator {
                     
                 """.formatted(apiNameUpperCase, apiName, apiNameUpperCase, apiName);
 
-        if(addAnotherGetOneName != null){
+        if(!addAnotherGetOneName.isEmpty()){
             String newGetOneTemplate =
                 """
                     @GetMapping("/%s/{%s}")
@@ -317,7 +324,7 @@ public class ApiGenerator {
 
             requestDtoContent = requestDtoContent + generateFieldTemplate(columns);
 
-            if(anotherGetOneName != null){
+            if(!anotherGetOneName.isEmpty()){
                 String constructorTemplate =
                         """
                             
@@ -430,7 +437,7 @@ public class ApiGenerator {
                         basePackage, basePackage, uppercaseFirstLetter(apiName), basePackage, uppercaseFirstLetter(apiName),
                         uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName));
 
-        if(anotherGetOneName != null){
+        if(!anotherGetOneName.isEmpty()){
             String contentTemplate =
                 """
                     ResponseDto<PostResponseDto> getOneBy%s(String %s);
@@ -547,7 +554,7 @@ public class ApiGenerator {
                     }
                 """.formatted(upperApiName, upperApiName, apiName, upperApiName);
 
-        if(anotherGetOneName != null){
+        if(!anotherGetOneName.isEmpty()){
             String getOneByAdditionalServiceContent =
                     """
                         @Override
@@ -671,7 +678,7 @@ public class ApiGenerator {
                 """.formatted(
                         upperApiName, upperApiName, upperApiName, upperApiName, upperApiName, upperApiName);
 
-        if(anotherGetOneName != null){
+        if(!anotherGetOneName.isEmpty()){
             String additionalQueryServiceContent =
             """
                 
@@ -840,6 +847,7 @@ public class ApiGenerator {
                     PrintWriter printWriter = new PrintWriter(fileWriter);
 
                     printWriter.print(fileList.get(i)[1]);
+                    fileWriter.close();
                     printWriter.close();
                 }
             }else{
@@ -850,6 +858,7 @@ public class ApiGenerator {
 
                 printWriter.print(fileContent);
                 printWriter.close();
+                fileWriter.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
