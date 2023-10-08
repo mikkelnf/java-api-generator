@@ -1,12 +1,100 @@
 package com.mnf.javaapigenerator.util;
 
-import com.mnf.javaapigenerator.dto.FieldRequestDto;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
-import java.io.*;
-import java.util.*;
+public class ApiGeneratorUtilBU {
+    public static void main(String[] args){
+        Scanner scanner = new Scanner(System.in);
 
-public class ApiGeneratorUtil {
-    private static String generateControllerContent(String basePackage, String apiName, String className, String additionalGetOne, String additionalGetOneDataType){
+        System.out.println("Api name (e.g., customer, product, etc) :");
+        String apiNameInput = scanner.nextLine();
+        String apiName = apiNameInput.toLowerCase();
+
+        System.out.println("Base package name (e.g., com.example.demo) :");
+        String basePackageInput = scanner.nextLine();
+        String basePackage = basePackageInput.toLowerCase();
+        String basePackagePath = basePackage.replace(".", "/");
+
+        String[] columns = {""};
+        String anotherGetOneName = "";
+
+        List<String> columnsForUpdate = new ArrayList<>();
+
+        System.out.println("Input additional column name and dataType (e.g., title:String, stock:int) : ");
+        String columnsInput = scanner.nextLine();
+        columns = columnsInput.replace(" ", "").split(",");
+
+        System.out.println("Add another getOne endpoint from the additional column? (Y/y)");
+        String addAnotherGetOneInput = scanner.nextLine();
+        if(addAnotherGetOneInput.matches("[Yy]")){
+            System.out.println("Choose one from the columns (1-%s) :".formatted(columns.length));
+            for(int i=0; i< columns.length; i++){
+                System.out.println(i+1 + ". " + columns[i].replaceAll("[:]\\w+", ""));
+            }
+            String anotherGetOneNameInput = scanner.nextLine();
+            anotherGetOneName = columns[Integer.valueOf(anotherGetOneNameInput) - 1].replaceAll("[:]\\w+", "");
+        }
+
+        System.out.println("Choose unique validation for add data endpoint (1-%s) :".formatted(columns.length));
+        for(int i=0; i< columns.length; i++){
+            System.out.println(i+1 + ". " + columns[i].replaceAll("[:]\\w+", ""));
+        }
+        String changeUniqueValidationNameInput = scanner.nextLine();
+        String changeUniqueValidationName = columns[Integer.valueOf(changeUniqueValidationNameInput) - 1].replaceAll("[:]\\w+", "");
+
+        System.out.println("Choose column to be included in add and update endpoint(1-%s) :".formatted(columns.length));
+        System.out.println("If choose multiple (e.g. 1,2,3)");
+        for(int i=0; i< columns.length; i++){
+            System.out.println(i+1 + ". " + columns[i].replaceAll("[:]\\w+", ""));
+        }
+        String columnsForUpdateInput = scanner.nextLine();
+        String[] columnsForUpdateInputArr = columnsForUpdateInput.split(",");
+        for(int i=0; i<columnsForUpdateInputArr.length; i++){
+            columnsForUpdate.add(columns[Integer.valueOf(columnsForUpdateInputArr[i])-1].replaceAll("[:]\\w+", ""));
+        }
+
+        scanner.close();
+
+//      generate controller
+        generateFile(apiName, basePackagePath, basePackage, "controller", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate entity
+        generateFile(apiName, basePackagePath, basePackage, "entity", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate entity listener
+        generateFile(apiName, basePackagePath, basePackage, "entityListener", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate dto
+        generateFile(apiName, basePackagePath, basePackage, "dto", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+        generateFile(apiName, basePackagePath, basePackage, "dto", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate repository
+        generateFile(apiName, basePackagePath, basePackage, "repository", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate interface service
+        generateFile(apiName, basePackagePath, basePackage, "interfaceService", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate service impl
+        generateFile(apiName, basePackagePath, basePackage, "serviceImpl", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate exception
+        generateFile(apiName, basePackagePath, basePackage, "exception", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+//      generate config
+        generateFile(apiName, basePackagePath, basePackage, "config", columns, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
+
+        String sourceZipDir = "src/main/java/com/mnf/javaapigenerator/result/";
+        String zipDestinationDir = "src/main/java/com/mnf/javaapigenerator/zip/";
+        String zipName = uppercaseFirstLetter(apiName).concat("Api.zip");
+
+        ZipGeneratorUtil.zipDirectory(sourceZipDir, zipDestinationDir, zipName);
+
+        DeleteDirectoryUtil.deleteDirectory(sourceZipDir);
+
+        System.out.println(FileEncoderUtil.encodeFileToBase64(zipDestinationDir.concat(zipName)));
+
+        DeleteDirectoryUtil.deleteDirectory(zipDestinationDir);
+    }
+
+    private static String generateControllerContent(String basePackage, String apiName, String className, String addAnotherGetOneName){
         String apiNameUpperCase = uppercaseFirstLetter(apiName);
 
         String controllerContentTopSection =
@@ -47,17 +135,17 @@ public class ApiGeneratorUtil {
                     
                 """.formatted(apiNameUpperCase, apiName, apiNameUpperCase, apiName);
 
-        if(!additionalGetOne.isEmpty()){
+        if(!addAnotherGetOneName.isEmpty()){
             String newGetOneTemplate =
                 """
                     @GetMapping("/%s/{%s}")
-                    public ResponseEntity<ResponseDto<%sResponseDto>> getOneBy%s(@PathVariable %s %s){
-                        return createResponse(%sService.getOneBy%s(%s));
+                    public ResponseEntity<ResponseDto<%sResponseDto>> getOneBy%s(@PathVariable String %s){
+                        return createResponse(%sService.getOneBySlug(%s));
                     }
                     
                 """.formatted(
-                        additionalGetOne, additionalGetOne, apiNameUpperCase, uppercaseFirstLetter(additionalGetOne),
-                        additionalGetOneDataType, additionalGetOne, apiName, uppercaseFirstLetter(additionalGetOne), additionalGetOne);
+                        addAnotherGetOneName, addAnotherGetOneName, apiNameUpperCase, uppercaseFirstLetter(addAnotherGetOneName),
+                        addAnotherGetOneName, apiName, addAnotherGetOneName);
 
             controllerContentFirstEndpointSection = controllerContentFirstEndpointSection + newGetOneTemplate;
         }
@@ -96,7 +184,7 @@ public class ApiGeneratorUtil {
         return controllerContentTopSection + controllerContentFirstEndpointSection + controllerContentSecondEndpointSection;
     }
 
-    private static String generateEntityContent(String basePackage, String apiName, String className, List<FieldRequestDto> additionalFields){
+    private static String generateEntityContent(String basePackage, String apiName, String className, String[] columns){
         String entityContentTopSection =
                 """
                 package %s.entity;
@@ -165,32 +253,35 @@ public class ApiGeneratorUtil {
                 }
                 """;
 
-        for(FieldRequestDto field : additionalFields){
-            String fieldName = field.getFieldName();
-            String fieldDataType = field.getDataType();
-            String regex = "([a-z])([A-Z]+)";
-            String replacement = "$1_$2";
-            String fieldNameUnderscore = fieldName.replaceAll(regex, replacement).toLowerCase();
-            String newColumnTemplate =
-                    """
-                        
-                        @Column(name = "%s")
-                        private %s %s;
-                    """.formatted(fieldNameUnderscore, fieldDataType, fieldName);
-            String newGetterSetterTemplate =
-                    """
-                        
-                        public %s get%s() {
-                            return %s;
-                        }
+        for(String column : columns){
+            if(!column.isEmpty() || !column.isBlank()){
+                String[] splittedColumn = column.split(":");
+                String columnName = splittedColumn[0];
+                String columnDataType = splittedColumn[1];
+                String regex = "([a-z])([A-Z]+)";
+                String replacement = "$1_$2";
+                String columnNameUnderscore = columnName.replaceAll(regex, replacement).toLowerCase();
+                String newColumnTemplate =
+                        """
+                            
+                            @Column(name = "%s")
+                            private %s %s;
+                        """.formatted(columnNameUnderscore, columnDataType, columnName);
+                String newGetterSetterTemplate =
+                        """
+                            
+                            public %s get%s() {
+                                return %s;
+                            }
+    
+                            public void set%s(%s %s) {
+                                this.%s = %s;
+                            }
+                        """.formatted(columnDataType, uppercaseFirstLetter(columnName), columnName, uppercaseFirstLetter(columnName), columnDataType, columnName, columnName, columnName);
 
-                        public void set%s(%s %s) {
-                            this.%s = %s;
-                        }
-                    """.formatted(fieldDataType, uppercaseFirstLetter(fieldName), fieldName, uppercaseFirstLetter(fieldName), fieldDataType, fieldName, fieldName, fieldName);
-
-            entityColumns = entityColumns + newColumnTemplate;
-            entityGetterSetter = newGetterSetterTemplate + entityGetterSetter;
+                entityColumns = entityColumns + newColumnTemplate;
+                entityGetterSetter = newGetterSetterTemplate + entityGetterSetter;
+            }
         }
 
         return entityContentTopSection.concat(entityColumns).concat(entityGetterSetter);
@@ -225,7 +316,7 @@ public class ApiGeneratorUtil {
                 """.formatted(basePackage, basePackage, entityName, className, entityName, entityName);
     }
 
-    private static String generateDtoContent(String basePackage, String apiName, String fileName, List<FieldRequestDto> additionalFields, String additionalGetOne, String additionalGetOneDataType){
+    private static String generateDtoContent(String basePackage, String apiName, String fileName, String[] columns, String anotherGetOneName){
         if(fileName.contains("RequestDto")){
             String requestDtoContent =
                     """
@@ -236,21 +327,19 @@ public class ApiGeneratorUtil {
                         private Integer isActive;
                     """.formatted(basePackage, uppercaseFirstLetter(apiName));
 
-            requestDtoContent = requestDtoContent + generateFieldTemplate(additionalFields);
+            requestDtoContent = requestDtoContent + generateFieldTemplate(columns);
 
-            if(!additionalGetOne.isEmpty()){
+            if(!anotherGetOneName.isEmpty()){
                 String constructorTemplate =
                         """
                             
                             public %sRequestDto() {
                             }
                         
-                            public %sRequestDto(%s %s) {
+                            public %sRequestDto(String %s) {
                                 this.%s = %s;
                             }
-                        """.formatted(
-                                uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName), additionalGetOneDataType,
-                                additionalGetOne, additionalGetOne, additionalGetOne);
+                        """.formatted(uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName), anotherGetOneName, anotherGetOneName, anotherGetOneName);
 
                 requestDtoContent = requestDtoContent + constructorTemplate;
             }
@@ -275,9 +364,9 @@ public class ApiGeneratorUtil {
                         }
                     """;
 
-            requestDtoContent = requestDtoContent + requestDtoGetterSetterContent + generateGetterSetterTemplate(additionalFields);
+            requestDtoContent = requestDtoContent + requestDtoGetterSetterContent + generateGetterSetterTemplate(columns);
 
-            return closeWithBracket(requestDtoContent);
+            return closeBracket(requestDtoContent);
         }
         else{
             String responseDtoContent =
@@ -330,14 +419,14 @@ public class ApiGeneratorUtil {
                     """;
 
             responseDtoContent =
-                    responseDtoContent + generateFieldTemplate(additionalFields) +
-                            responseDtoGetterSetterContent + generateGetterSetterTemplate(additionalFields);
+                    responseDtoContent + generateFieldTemplate(columns) +
+                            responseDtoGetterSetterContent + generateGetterSetterTemplate(columns);
 
-            return closeWithBracket(responseDtoContent);
+            return closeBracket(responseDtoContent);
         }
     }
 
-    private static String generateInterfaceServiceContent(String basePackage, String apiName, String additionalGetOne, String additionalGetOneDataType){
+    private static String generateInterfaceServiceContent(String basePackage, String apiName, String anotherGetOneName){
         String interfaceContent1 =
                 """
                 package %s.service;
@@ -353,11 +442,11 @@ public class ApiGeneratorUtil {
                         basePackage, basePackage, uppercaseFirstLetter(apiName), basePackage, uppercaseFirstLetter(apiName),
                         uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName), uppercaseFirstLetter(apiName));
 
-        if(!additionalGetOne.isEmpty()){
+        if(!anotherGetOneName.isEmpty()){
             String contentTemplate =
                 """
-                    ResponseDto<PostResponseDto> getOneBy%s(%s %s);
-                """.formatted(uppercaseFirstLetter(additionalGetOne), additionalGetOneDataType, additionalGetOne);
+                    ResponseDto<PostResponseDto> getOneBy%s(String %s);
+                """.formatted(uppercaseFirstLetter(anotherGetOneName), anotherGetOneName);
 
             interfaceContent1 = interfaceContent1 + contentTemplate;
         }
@@ -373,10 +462,9 @@ public class ApiGeneratorUtil {
         return interfaceContent1 + interfaceContent2;
     }
 
-    private static String generateServiceImplContent(String basePackage, String apiName, String additionalGetOne, String additionalGetOneDataType, String uniqueField, List<String> configuredFields){
+    private static String generateServiceImplContent(String basePackage, String apiName, String anotherGetOneName, String changeUniqueValidationName, List<String> columnsForAddAndUpdate){
         String upperApiName = uppercaseFirstLetter(apiName);
-        String upperAdditionalGetOne = !additionalGetOne.isEmpty() ? uppercaseFirstLetter(additionalGetOne) : "";
-        String upperUniqueField = !uniqueField.isEmpty() ? uppercaseFirstLetter(uniqueField) : "";
+        String upperAnotherGetOneName = uppercaseFirstLetter(anotherGetOneName);
         String content =
                 """
                 package %s.service;
@@ -408,24 +496,33 @@ public class ApiGeneratorUtil {
                         upperApiName, basePackage, upperApiName, upperApiName,
                         upperApiName, upperApiName, upperApiName, apiName);
 
-        String setFieldsDataContent =
+        String optionalUniqueContent =
+                "Optional<%sEntity> optionalExistingEntity = findOneBy%sQuery(requestDto).getOne();"
+                        .formatted(upperApiName, uppercaseFirstLetter(changeUniqueValidationName));
+
+        String columnsForAddContent =
                 """
                 ///add data
                 """;
 
-        for(String field : configuredFields){
-            String newSetFieldsDataTemplate =
+        for(String column : columnsForAddAndUpdate){
+            String columnsForUpdateContentTemplate =
                     """
                                 entity.set%s(requestDto.get%s());
-                    """.formatted(uppercaseFirstLetter(field), uppercaseFirstLetter(field));
+                    """.formatted(uppercaseFirstLetter(column), uppercaseFirstLetter(column));
 
-            setFieldsDataContent = setFieldsDataContent + newSetFieldsDataTemplate;
+            columnsForAddContent = columnsForAddContent + columnsForUpdateContentTemplate;
         }
 
-        String setEntityContent = !uniqueField.isEmpty() ?
+        String addServiceContent =
                 """
-                Optional<%sEntity> optionalExistingEntity = findOneBy%sQuery(requestDto).getOne();
-                        
+                    
+                    @Override
+                    public ResponseStatusOnlyDto add(%sRequestDto requestDto) {
+                        %s
+                
+                        ResponseStatusOnlyDto responseStatusOnlyDto = new ResponseStatusOnlyDto();
+                
                         if(optionalExistingEntity.isPresent()){
                             responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.ERROR);
                             responseStatusOnlyDto.setMessage(PostException.DATA_EXISTED);
@@ -437,27 +534,10 @@ public class ApiGeneratorUtil {
                 
                             responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.SUCCESS);
                         }
-                """.formatted(upperApiName, uppercaseFirstLetter(uniqueField), upperApiName, upperApiName, setFieldsDataContent, apiName) :
-                """
-                %sEntity entity = new %sEntity();
-            
-                        %s
-                        %sRepository.save(entity);
-            
-                        responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.SUCCESS);
-                """.formatted(upperApiName, upperApiName, setFieldsDataContent, apiName);
-
-        String addServiceContent =
-                """
-                    
-                    @Override
-                    public ResponseStatusOnlyDto add(%sRequestDto requestDto) {
-                        ResponseStatusOnlyDto responseStatusOnlyDto = new ResponseStatusOnlyDto();
                 
-                        %s
                         return responseStatusOnlyDto;
                     }
-                """.formatted(upperApiName, setEntityContent);
+                """.formatted(upperApiName, optionalUniqueContent, upperApiName, upperApiName, columnsForAddContent, apiName);
 
         String getOneContent =
                 """
@@ -479,11 +559,11 @@ public class ApiGeneratorUtil {
                     }
                 """.formatted(upperApiName, upperApiName, apiName, upperApiName);
 
-        if(!additionalGetOne.isEmpty()){
+        if(!anotherGetOneName.isEmpty()){
             String getOneByAdditionalServiceContent =
                     """
                         @Override
-                        public ResponseDto<%sResponseDto> getOneBy%s(%s %s) {
+                        public ResponseDto<%sResponseDto> getOneBy%s(String %s) {
                             Optional<%sEntity> optionalExistingEntity = findOneBy%sQuery(new %sRequestDto(%s)).getOne();
                     
                             ResponseDto<%sResponseDto> responseDto = new ResponseDto<>();
@@ -499,8 +579,8 @@ public class ApiGeneratorUtil {
                             return responseDto;
                         }
                     """.formatted(
-                            upperApiName, upperAdditionalGetOne, additionalGetOneDataType, additionalGetOne, upperApiName, upperAdditionalGetOne,
-                            upperApiName, additionalGetOne, upperApiName, upperApiName, upperApiName);
+                            upperApiName, upperAnotherGetOneName, anotherGetOneName, upperApiName, upperAnotherGetOneName,
+                            upperApiName, anotherGetOneName, upperApiName, upperApiName, upperApiName);
 
             getOneContent = getOneContent + getOneByAdditionalServiceContent;
         }
@@ -524,40 +604,19 @@ public class ApiGeneratorUtil {
                     }
                 """.formatted(upperApiName, upperApiName, upperApiName, upperApiName, upperApiName, upperApiName);
 
-        String setFieldsUpdateEntityContent =
+        String columnsForUpdateContent =
                 """
                 ///update data
                 """;
 
-        for(String field : configuredFields){
+        for(String column : columnsForAddAndUpdate){
             String columnsForUpdateContentTemplate =
                     """
-                                    entity.set%s(requestDto.get%s());
-                    """.formatted(uppercaseFirstLetter(field), uppercaseFirstLetter(field));
+                                entity.set%s(requestDto.get%s());
+                    """.formatted(uppercaseFirstLetter(column), uppercaseFirstLetter(column));
 
-            setFieldsUpdateEntityContent = setFieldsUpdateEntityContent + columnsForUpdateContentTemplate;
+            columnsForUpdateContent = columnsForUpdateContent + columnsForUpdateContentTemplate;
         }
-
-        String setUpdateEntityContent = !uniqueField.isEmpty() ?
-                """
-                Optional<%sEntity> optionalExistingEntity2 = findOneBy%sQuery(requestDto).getOne();
-                            
-                            if(optionalExistingEntity2.isPresent()){
-                                responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.ERROR);
-                                responseStatusOnlyDto.setMessage(PostException.DATA_EXISTED);
-                            }else{
-                                %s
-                                %sRepository.save(entity);
-                    
-                                responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.SUCCESS);
-                            }
-                """.formatted(upperApiName, uppercaseFirstLetter(uniqueField), setFieldsUpdateEntityContent, apiName) :
-                """
-                            %s
-                            %sRepository.save(entity);
-                
-                            responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.SUCCESS);
-                """.formatted(setFieldsUpdateEntityContent, apiName);
 
         String updateServiceContent =
                 """
@@ -571,6 +630,9 @@ public class ApiGeneratorUtil {
                             %sEntity entity = optionalExistingEntity.get();
                 
                             %s
+                            %sRepository.save(entity);
+                
+                            responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.SUCCESS);
                         }else{
                             responseStatusOnlyDto.setStatus(ResponseDtoStatusEnum.ERROR);
                             responseStatusOnlyDto.setMessage(PostException.NOT_FOUND);
@@ -578,7 +640,7 @@ public class ApiGeneratorUtil {
                 
                         return responseStatusOnlyDto;
                     }
-                """.formatted(upperApiName, upperApiName, apiName, upperApiName, setUpdateEntityContent);
+                """.formatted(upperApiName, upperApiName, apiName, upperApiName, columnsForUpdateContent, apiName);
 
         String deleteServiceContent =
                 """
@@ -621,62 +683,30 @@ public class ApiGeneratorUtil {
                 """.formatted(
                         upperApiName, upperApiName, upperApiName, upperApiName, upperApiName, upperApiName);
 
-        if(!additionalGetOne.isEmpty() && !uniqueField.isEmpty() && additionalGetOne.equals(uniqueField)){
+        if(!anotherGetOneName.isEmpty()){
             String additionalQueryServiceContent =
-                    """
-                        
-                        public CustomQueryBuilder<%sEntity> findOneBy%sQuery(%sRequestDto requestDto) {
-                            return getQueryBuilder()
-                                    .buildQuery(get%sEntityClass())
-                                    .start()
-                                        .equals("%s", requestDto.get%s())
-                                    .end();
-                        }
-                    """.formatted(
-                            upperApiName, upperAdditionalGetOne, upperApiName,
-                            upperApiName, uniqueField, upperAdditionalGetOne);
+            """
+                
+                public CustomQueryBuilder<%sEntity> findOneBy%sQuery(%sRequestDto requestDto) {
+                    return getQueryBuilder()
+                            .buildQuery(get%sEntityClass())
+                            .start()
+                                .equals("%s", requestDto.get%s())
+                            .end();
+                }
+            """.formatted(
+                    upperApiName, upperAnotherGetOneName, upperApiName, upperApiName, anotherGetOneName, upperAnotherGetOneName);
 
             queryServiceContent = queryServiceContent + additionalQueryServiceContent;
-        }else{
-            if(!additionalGetOne.isEmpty()){
-                String additionalGetOneQueryServiceContent =
-                        """
-                            
-                            public CustomQueryBuilder<%sEntity> findOneBy%sQuery(%sRequestDto requestDto) {
-                                return getQueryBuilder()
-                                        .buildQuery(get%sEntityClass())
-                                        .start()
-                                            .equals("%s", requestDto.get%s())
-                                        .end();
-                            }
-                        """.formatted(
-                                upperApiName, upperAdditionalGetOne, upperApiName,
-                                upperApiName, additionalGetOne, upperAdditionalGetOne);
-
-                queryServiceContent = queryServiceContent + additionalGetOneQueryServiceContent;
-            }
-            if(!uniqueField.isEmpty()){
-                String additionalUniqueQueryServiceContent =
-                        """
-                            
-                            public CustomQueryBuilder<%sEntity> findOneBy%sQuery(%sRequestDto requestDto) {
-                                return getQueryBuilder()
-                                        .buildQuery(get%sEntityClass())
-                                        .start()
-                                            .equals("%s", requestDto.get%s())
-                                        .end();
-                            }
-                        """.formatted(
-                                upperApiName, upperUniqueField, upperApiName,
-                                upperApiName, uniqueField, upperUniqueField);
-
-                queryServiceContent = queryServiceContent + additionalUniqueQueryServiceContent;
-            }
         }
 
-        return closeWithBracket(
-                content + addServiceContent + getOneContent + getPaginationServiceContent +
-                        updateServiceContent + deleteServiceContent + queryServiceContent);
+        String endOfTemplate =
+                """
+                }
+                """;
+
+        return content + addServiceContent + getOneContent + getPaginationServiceContent + updateServiceContent +
+                deleteServiceContent + queryServiceContent + endOfTemplate;
     }
 
     private static String generateRepositoryContent(String basePackage, String apiName){
@@ -733,8 +763,8 @@ public class ApiGeneratorUtil {
     }
 
     public static void generateFile(String apiNameInput, String basePackagePath,
-                                     String basePackageInput, String fileType, List<FieldRequestDto> additionalFields,
-                                     FieldRequestDto additionalGetOne, String changeUniqueValidationName,
+                                     String basePackageInput, String fileType, String[] columns,
+                                     String anotherGetOneName, String changeUniqueValidationName,
                                      List<String> columnsForUpdate) {
         String fileName = "";
         String className = "";
@@ -750,14 +780,14 @@ public class ApiGeneratorUtil {
                 className = uppercaseFirstLetter(apiNameInput).concat("Controller");
                 fileDirectory = String.format("src/main/java/com/mnf/javaapigenerator/result/%s/controller", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
-                fileContent = generateControllerContent(basePackageInput, apiNameInput, className, additionalGetOne.getFieldName(), additionalGetOne.getDataType());
+                fileContent = generateControllerContent(basePackageInput, apiNameInput, className, anotherGetOneName);
                 break;
             case("entity"):
                 fileName = uppercaseFirstLetter(apiNameInput).concat("Entity.java");
                 className = uppercaseFirstLetter(apiNameInput).concat("Entity");
                 fileDirectory = String.format("src/main/java/com/mnf/javaapigenerator/result/%s/entity", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
-                fileContent = generateEntityContent(basePackageInput, apiNameInput, className, additionalFields);
+                fileContent = generateEntityContent(basePackageInput, apiNameInput, className, columns);
                 break;
             case("entityListener"):
                 String entityName = uppercaseFirstLetter(apiNameInput).concat("Entity");
@@ -773,8 +803,8 @@ public class ApiGeneratorUtil {
                 String responseFileName = uppercaseFirstLetter(apiNameInput).concat("ResponseDto.java");
                 String requestFilePath = String.format("%s/%s", fileDirectory, requestFileName);
                 String responseFilePath = String.format("%s/%s", fileDirectory, responseFileName);
-                String requestFileContent = generateDtoContent(basePackageInput, apiNameInput, requestFileName, additionalFields, additionalGetOne.getFieldName(), additionalGetOne.getDataType());
-                String responseFileContent = generateDtoContent(basePackageInput, apiNameInput, responseFileName, additionalFields, additionalGetOne.getFieldName(), additionalGetOne.getDataType());
+                String requestFileContent = generateDtoContent(basePackageInput, apiNameInput, requestFileName, columns, anotherGetOneName);
+                String responseFileContent = generateDtoContent(basePackageInput, apiNameInput, responseFileName, columns, anotherGetOneName);
                 String[] requestFile = new String[] {requestFilePath, requestFileContent};
                 String[] responseFile = new String[] {responseFilePath, responseFileContent};
                 multipleFiles = true;
@@ -791,13 +821,13 @@ public class ApiGeneratorUtil {
                 fileName = "I".concat(uppercaseFirstLetter(apiNameInput).concat("Service.java"));
                 fileDirectory = String.format("src/main/java/com/mnf/javaapigenerator/result/%s/service", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
-                fileContent = generateInterfaceServiceContent(basePackageInput, apiNameInput, additionalGetOne.getFieldName(), additionalGetOne.getDataType());
+                fileContent = generateInterfaceServiceContent(basePackageInput, apiNameInput, anotherGetOneName);
                 break;
             case("serviceImpl"):
                 fileName = uppercaseFirstLetter(apiNameInput).concat("ServiceImpl.java");
                 fileDirectory = String.format("src/main/java/com/mnf/javaapigenerator/result/%s/service", basePackagePath);
                 filePath = String.format("%s/%s", fileDirectory, fileName);
-                fileContent = generateServiceImplContent(basePackageInput, apiNameInput, additionalGetOne.getFieldName(), additionalGetOne.getDataType(), changeUniqueValidationName, columnsForUpdate);
+                fileContent = generateServiceImplContent(basePackageInput, apiNameInput, anotherGetOneName, changeUniqueValidationName, columnsForUpdate);
                 break;
             case("exception"):
                 fileName = uppercaseFirstLetter(apiNameInput).concat("Exception.java");
@@ -840,52 +870,57 @@ public class ApiGeneratorUtil {
         }
     }
 
-    private static String generateFieldTemplate(List<FieldRequestDto> additionalFields){
+    private static String generateFieldTemplate(String[] columns){
         String result = "";
 
-        for(FieldRequestDto field : additionalFields){
-            String fieldName = field.getFieldName();
-            String fieldDataType = field.getDataType();
-            String newColumnTemplate =
-                    """
-                        private %s %s;
-                    """.formatted(fieldDataType, fieldName);
+        for(String column : columns){
+            if(!column.isEmpty() || !column.isBlank()){
+                String[] splittedColumn = column.split(":");
+                String columnName = splittedColumn[0];
+                String columnDataType = splittedColumn[1];
+                String newColumnTemplate =
+                        """
+                            private %s %s;
+                        """.formatted(columnDataType, columnName);
 
-            result = result + newColumnTemplate;
+                result = result + newColumnTemplate;
+            }
         }
 
         return result;
     }
 
-    private static String generateGetterSetterTemplate(List<FieldRequestDto> additionalFields){
+    private static String generateGetterSetterTemplate(String[] columns){
         String result = "";
 
-        for(FieldRequestDto field : additionalFields){
-            String fieldName = field.getFieldName();
-            String fieldDataType = field.getDataType();
-            String newGetterSetterTemplate =
-                    """
-                        
-                        public %s get%s() {
-                            return %s;
-                        }
+        for(String column : columns){
+            if(!column.isEmpty() || !column.isBlank()){
+                String[] splittedColumn = column.split(":");
+                String columnName = splittedColumn[0];
+                String columnDataType = splittedColumn[1];
+                String newGetterSetterTemplate =
+                        """
+                            
+                            public %s get%s() {
+                                return %s;
+                            }
+    
+                            public void set%s(%s %s) {
+                                this.%s = %s;
+                            }
+                        """.formatted(columnDataType, uppercaseFirstLetter(columnName), columnName, uppercaseFirstLetter(columnName), columnDataType, columnName, columnName, columnName);
 
-                        public void set%s(%s %s) {
-                            this.%s = %s;
-                        }
-                    """.formatted(
-                            fieldDataType, uppercaseFirstLetter(fieldName), fieldName, uppercaseFirstLetter(fieldName),
-                            fieldDataType, fieldName, fieldName, fieldName);
-
-            result = result + newGetterSetterTemplate;
+                result = result + newGetterSetterTemplate;
+            }
         }
 
         return result;
     }
 
-    private static String closeWithBracket(String content){
+    private static String closeBracket(String content){
         String endOfTemplate =
                 """
+                
                 }
                 """;
 
