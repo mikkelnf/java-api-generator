@@ -8,7 +8,7 @@ public class RequestDto {
     private List<FieldRequestDto> additionalFields;
     private FieldRequestDto additionalGetOne;
     private String additionalUniqueField;
-    private List<String> configuredFields;
+    private List<String> dynamicFields;
 
     public String getApiName() {
         return apiName;
@@ -50,11 +50,11 @@ public class RequestDto {
         this.additionalUniqueField = additionalUniqueField;
     }
 
-    public List<String> getConfiguredFields() {
-        return configuredFields;
+    public List<String> getDynamicFields() {
+        return dynamicFields;
     }
 
-    public void setConfiguredFields(List<String> configuredFields) {
-        this.configuredFields = configuredFields;
+    public void setDynamicFields(List<String> dynamicFields) {
+        this.dynamicFields = dynamicFields;
     }
 }

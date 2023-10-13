@@ -16,24 +16,24 @@ public class ApiGeneratorServiceImpl implements IApiGeneratorService {
         String basePackagePath = basePackage.replace(".", "/");
 
 //      generate controller
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "controller", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "controller", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate entity
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "entity", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "entity", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate entity listener
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "entityListener", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "entityListener", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate dto
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "dto", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "dto", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "dto", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "dto", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate repository
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "repository", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "repository", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate interface service
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "interfaceService", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "interfaceService", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate service impl
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "serviceImpl", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "serviceImpl", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate exception
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "exception", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "exception", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 //      generate config
-        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "config", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getConfiguredFields());
+        ApiGeneratorUtil.generateFile(apiName, basePackagePath, basePackage, "config", requestDto.getAdditionalFields(), requestDto.getAdditionalGetOne(), requestDto.getAdditionalUniqueField(), requestDto.getDynamicFields());
 
         String sourceZipDir = "src/main/java/com/mnf/javaapigenerator/result/";
         String zipDestinationDir = "src/main/java/com/mnf/javaapigenerator/zip/";
