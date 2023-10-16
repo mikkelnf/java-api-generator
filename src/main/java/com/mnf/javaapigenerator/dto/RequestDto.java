@@ -5,7 +5,10 @@ import java.util.List;
 public class RequestDto {
     private String apiName;
     private String basePackage;
-    private List<ColumnRequestDto> columns;
+    private List<FieldRequestDto> additionalFields;
+    private FieldRequestDto additionalGetOne;
+    private String additionalUniqueField;
+    private List<String> dynamicFields;
 
     public String getApiName() {
         return apiName;
@@ -23,11 +26,35 @@ public class RequestDto {
         this.basePackage = basePackage;
     }
 
-    public List<ColumnRequestDto> getColumns() {
-        return columns;
+    public List<FieldRequestDto> getAdditionalFields() {
+        return additionalFields;
     }
 
-    public void setColumns(List<ColumnRequestDto> columns) {
-        this.columns = columns;
+    public void setAdditionalFields(List<FieldRequestDto> additionalFields) {
+        this.additionalFields = additionalFields;
+    }
+
+    public FieldRequestDto getAdditionalGetOne() {
+        return additionalGetOne;
+    }
+
+    public void setAdditionalGetOne(FieldRequestDto additionalGetOne) {
+        this.additionalGetOne = additionalGetOne;
+    }
+
+    public String getAdditionalUniqueField() {
+        return additionalUniqueField;
+    }
+
+    public void setAdditionalUniqueField(String additionalUniqueField) {
+        this.additionalUniqueField = additionalUniqueField;
+    }
+
+    public List<String> getDynamicFields() {
+        return dynamicFields;
+    }
+
+    public void setDynamicFields(List<String> dynamicFields) {
+        this.dynamicFields = dynamicFields;
     }
 }
