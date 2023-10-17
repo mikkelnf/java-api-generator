@@ -9,4 +9,4 @@ COPY . /app
 EXPOSE 8080
 
 # Command to run the Spring Boot application in production mode using wildcard
-CMD ["java", "-jar", "build/libs/*.jar"]
+CMD ["java", "-jar", "build/libs/java-api-generator-0.0.1-SNAPSHOT.jar"]
