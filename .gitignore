@@ -43,6 +43,7 @@ Thumbs.db
 
 # Miscellaneous
 build/
+!build/libs/
 .gradle/
 .idea/
 *.class
