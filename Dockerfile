@@ -5,8 +5,6 @@ WORKDIR /app
 # Copy the entire project directory into the container
 COPY . /app
 
-# Expose the port your application will listen on
-EXPOSE 8080
+EXPOSE 8083
 
-# Command to run the Spring Boot application in production mode using wildcard
 CMD ["java", "-jar", "build/libs/java-api-generator-0.0.1-SNAPSHOT.jar"]
