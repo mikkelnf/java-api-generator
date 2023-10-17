@@ -1,5 +1,4 @@
 # Compiled class files
-/build/
 /out/
 /bin/
 /.gradle/
@@ -42,12 +41,11 @@ Thumbs.db
 .gradle-wrapper/
 
 # Miscellaneous
-build/
+#build/
 !build/libs/
 .gradle/
 .idea/
 *.class
-*.jar
 *.war
 *.ear
 *.zip
